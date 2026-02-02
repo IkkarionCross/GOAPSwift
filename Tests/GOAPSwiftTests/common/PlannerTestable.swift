@@ -10,6 +10,7 @@ protocol PlannerTestable {
 extension PlannerTestable {
 
     func assert(actions: [Action], expectedActionsNames: [String]) {
+
         if actions.isEmpty {
             Issue.record("No plan found")
             return
@@ -19,14 +20,12 @@ extension PlannerTestable {
 
         for action in actions.reversed() {
             
-            #expect(expectedActionsNames.contains(action.name) == true, "Unexpected action: \(action.name)")
-            // guard expectedActionsNames.contains(action.name) else {
-            //     Issue.record("Unexpected action: \(action.name)")
-            //     return
-            // }
+            print("Action: \(action.name)")
             
-            print(action.name)
+            #expect(expectedActionsNames.contains(action.name) == true, "Unexpected action: \(action.name)")
+
         }
+        
     }
 
 }
