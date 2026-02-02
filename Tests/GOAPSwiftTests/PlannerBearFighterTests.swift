@@ -14,9 +14,7 @@ final class PlannerBearFighterTests: PlannerTestable {
     let enemy_in_range = 2
     let enemy_in_close_range = 3
     let enemy_in_avg_range = 4
-    let is_taking_close_hit = 5
-    let is_taking_range_hit = 6
-    let is_taking_avg_range_hit = 7
+    let is_taking_hit = 5
     let life_less_than_50_percent = 8
     let enemy_is_getting_away = 9
     let is_time_to_two_claw_attack = 10
@@ -80,7 +78,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         counterClawAttack.setPrecondition(id: enemy_sighted, value: true)
         counterClawAttack.setPrecondition(id: enemy_dead, value: false)
         counterClawAttack.setPrecondition(id: enemy_in_close_range, value: true)
-        counterClawAttack.setPrecondition(id: is_taking_close_hit, value: true)
+        counterClawAttack.setPrecondition(id: is_taking_hit, value: true)
 
         counterClawAttack.setEffect(id: enemy_dead, value: true)
         actions.append(counterClawAttack)
@@ -89,7 +87,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         counterDeathRayAttack.setPrecondition(id: enemy_sighted, value: true)
         counterDeathRayAttack.setPrecondition(id: enemy_dead, value: false)
         counterDeathRayAttack.setPrecondition(id: enemy_in_range, value: true)
-        counterDeathRayAttack.setPrecondition(id: is_taking_range_hit, value: true)
+        counterDeathRayAttack.setPrecondition(id: is_taking_hit, value: true)
 
         counterDeathRayAttack.setEffect(id: enemy_dead, value: true)
         actions.append(counterDeathRayAttack)
@@ -98,7 +96,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         counterAOEAttack.setPrecondition(id: enemy_sighted, value: true)
         counterAOEAttack.setPrecondition(id: enemy_dead, value: false)
         counterAOEAttack.setPrecondition(id: enemy_in_avg_range, value: true)
-        counterAOEAttack.setPrecondition(id: is_taking_avg_range_hit, value: true)
+        counterAOEAttack.setPrecondition(id: is_taking_hit, value: true)
 
         counterAOEAttack.setEffect(id: enemy_dead, value: true)
         actions.append(counterAOEAttack)
@@ -124,6 +122,8 @@ final class PlannerBearFighterTests: PlannerTestable {
         deathRay3Attack.setPrecondition(id: enemy_sighted, value: true)
         deathRay3Attack.setPrecondition(id: enemy_dead, value: false)
         deathRay3Attack.setPrecondition(id: enemy_in_avg_range, value: true)
+        deathRay3Attack.setPrecondition(id: enemy_in_close_range, value: true)
+        deathRay3Attack.setPrecondition(id: enemy_in_range, value: true)
         deathRay3Attack.setPrecondition(id: enemy_is_getting_away, value: true)
 
         deathRay3Attack.setEffect(id: enemy_dead, value: true)
@@ -144,9 +144,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         initialState[enemy_in_range] = false
         initialState[enemy_in_close_range] = false
         initialState[enemy_in_avg_range] = false
-        initialState[is_taking_close_hit] = false
-        initialState[is_taking_range_hit] = false
-        initialState[is_taking_avg_range_hit] = false
+        initialState[is_taking_hit] = false
         initialState[life_less_than_50_percent] = false
         initialState[enemy_is_getting_away] = false
         initialState[is_time_to_two_claw_attack] = false
@@ -281,7 +279,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         assert(actions: nextActions, expectedActionsNames: expectedActionsNames)
     }
 
-     @Test
+    @Test
     func shouldAttackFromTwoClawAttack() async throws {
 
         let expectedActionsNames: [String] = [
@@ -295,6 +293,206 @@ final class PlannerBearFighterTests: PlannerTestable {
         initialState[enemy_sighted] = true
         initialState[enemy_in_close_range] = true
         initialState[is_time_to_two_claw_attack] = true
+
+        var goalState = WorldState(name: "State", priority: 100)
+        goalState[enemy_dead] = true
+
+        let planner = Planner()
+
+        let nextActions = planner.plan(fromState: initialState, toGoalState: goalState, actions: actions)
+
+        assert(actions: nextActions, expectedActionsNames: expectedActionsNames)
+    }
+
+    @Test
+    func shouldGoBeserkModeCloseRange() async throws {
+
+        let expectedActionsNames: [String] = [
+            "beserkMode",
+            "clawAttack"
+        ]
+
+        createActions()
+
+        var initialState = createInitialState()
+        initialState[enemy_sighted] = true
+        initialState[enemy_in_close_range] = true
+        initialState[life_less_than_50_percent] = true
+
+        var goalState = WorldState(name: "State", priority: 100)
+        goalState[enemy_dead] = true
+
+        let planner = Planner()
+
+        let nextActions = planner.plan(fromState: initialState, toGoalState: goalState, actions: actions)
+
+        assert(actions: nextActions, expectedActionsNames: expectedActionsNames)
+    }
+
+    @Test
+    func shouldGoBeserkModeFromDistance() async throws {
+
+        let expectedActionsNames: [String] = [
+            "beserkMode",
+            "deathRayAttack"
+        ]
+
+        createActions()
+
+        var initialState = createInitialState()
+        initialState[enemy_sighted] = true
+        initialState[enemy_in_range] = true
+        initialState[life_less_than_50_percent] = true
+
+        var goalState = WorldState(name: "State", priority: 100)
+        goalState[enemy_dead] = true
+
+        let planner = Planner()
+
+        let nextActions = planner.plan(fromState: initialState, toGoalState: goalState, actions: actions)
+
+        assert(actions: nextActions, expectedActionsNames: expectedActionsNames)
+    }
+
+    @Test
+    func shouldGoBeserkModeAvgDistance() async throws {
+
+        let expectedActionsNames: [String] = [
+            "beserkMode",
+            "AOEAttack"
+        ]
+
+        createActions()
+
+        var initialState = createInitialState()
+        initialState[enemy_sighted] = true
+        initialState[enemy_in_avg_range] = true
+        initialState[life_less_than_50_percent] = true
+
+        var goalState = WorldState(name: "State", priority: 100)
+        goalState[enemy_dead] = true
+
+        let planner = Planner()
+
+        let nextActions = planner.plan(fromState: initialState, toGoalState: goalState, actions: actions)
+
+        assert(actions: nextActions, expectedActionsNames: expectedActionsNames)
+    }
+
+    @Test
+    func shouldCounterCloseRangeAttack() async throws {
+
+        let expectedActionsNames: [String] = [
+            "clawAttack",
+            "counterClawAttack",
+        ]
+
+        createActions()
+
+        var initialState = createInitialState()
+        initialState[enemy_sighted] = true
+        initialState[enemy_in_close_range] = true
+        initialState[is_taking_hit] = true
+
+        var goalState = WorldState(name: "State", priority: 100)
+        goalState[enemy_dead] = true
+
+        let planner = Planner()
+
+        let nextActions = planner.plan(fromState: initialState, toGoalState: goalState, actions: actions)
+
+        assert(actions: nextActions, expectedActionsNames: expectedActionsNames)
+    }
+
+    @Test
+    func shouldCounterAVGRangeAttack() async throws {
+
+        let expectedActionsNames: [String] = [
+            "counterAOEAttack",
+        ]
+
+        createActions()
+
+        var initialState = createInitialState()
+        initialState[enemy_sighted] = true
+        initialState[enemy_in_avg_range] = true
+        initialState[is_taking_hit] = true
+
+        var goalState = WorldState(name: "State", priority: 100)
+        goalState[enemy_dead] = true
+
+        let planner = Planner()
+
+        let nextActions = planner.plan(fromState: initialState, toGoalState: goalState, actions: actions)
+
+        assert(actions: nextActions, expectedActionsNames: expectedActionsNames)
+    }
+
+    @Test
+    func shouldCounterRangeAttack() async throws {
+
+        let expectedActionsNames: [String] = [
+            "deathRayAttack",
+            "counterDeathRayAttack",
+        ]
+
+        createActions()
+
+        var initialState = createInitialState()
+        initialState[enemy_sighted] = true
+        initialState[enemy_in_range] = true
+        initialState[is_taking_hit] = true
+
+        var goalState = WorldState(name: "State", priority: 100)
+        goalState[enemy_dead] = true
+
+        let planner = Planner()
+
+        let nextActions = planner.plan(fromState: initialState, toGoalState: goalState, actions: actions)
+
+        assert(actions: nextActions, expectedActionsNames: expectedActionsNames)
+    }
+
+    @Test
+    func shouldAttackingGettingWayEnemy() async throws {
+
+        let expectedActionsNames: [String] = [
+            "deathRayAttack",
+            "deathRay3Attack",
+        ]
+
+        createActions()
+
+        var initialState = createInitialState()
+        initialState[enemy_sighted] = true
+        initialState[enemy_in_range] = true
+        initialState[enemy_is_getting_away] = true
+
+        var goalState = WorldState(name: "State", priority: 100)
+        goalState[enemy_dead] = true
+
+        let planner = Planner()
+
+        let nextActions = planner.plan(fromState: initialState, toGoalState: goalState, actions: actions)
+
+        assert(actions: nextActions, expectedActionsNames: expectedActionsNames)
+    }
+
+    @Test
+    func shouldAttackGettingWayEnemyClose() async throws {
+
+        let expectedActionsNames: [String] = [
+            "clawAttack",
+            "getCloseTwoClawAttack",
+            "deathRay3Attack",
+        ]
+
+        createActions()
+
+        var initialState = createInitialState()
+        initialState[enemy_sighted] = true
+        initialState[enemy_in_close_range] = true
+        initialState[enemy_is_getting_away] = true
 
         var goalState = WorldState(name: "State", priority: 100)
         goalState[enemy_dead] = true
