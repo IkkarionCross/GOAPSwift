@@ -6,7 +6,7 @@ A GOAP Implementation in Swift inspired by: [cppGOAP](https://github.com/cpowell
 
 1. Debugger: give the option of debug mode to see logs of what is going on;
 2. More planner tests with different scenarios;
-3. Concurrency model: support swift concurrency. I idented to use this libary in a projet inside [GodotSwift](https://github.com/migueldeicaza/SwiftGodot), so need to see if the support of concurrency is in place;
+3. Concurrency model: support swift concurrency. I intended to use this libary in a project inside [GodotSwift](https://github.com/migueldeicaza/SwiftGodot), so need to see if the support of concurrency is in place;
 
 ## GOAP Overview
 
