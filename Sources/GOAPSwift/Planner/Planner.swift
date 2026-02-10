@@ -23,7 +23,7 @@ public class Planner {
     }
 
     public func plan(fromState startState: WorldState, toGoalState goal: WorldState, actions: [Action]) -> [Action] {
-        if startState.meets(goalState: goal) {
+        guard !startState.meets(goalState: goal) else {
             return []
         }
 
@@ -33,7 +33,7 @@ public class Planner {
         let startingNode = NodeGOAP(
             state: startState, 
             parentId: 0, 
-            cost: calculateHeuristic(current: startState, goal: goal), 
+            cost: calculateHeuristic(withCurrent: startState, andGoal: goal), 
             costToGoal: 0, 
             action: nil
         )
@@ -41,89 +41,93 @@ public class Planner {
         openAStar.append(startingNode)
 
         while openAStar.count > 0 {
-            guard let current = popAndAddToClose() else {
+            guard let current = extractNextNode() else {
                 return []
             }
 
-            if current.state.meets(goalState: goal){
-                var current: NodeGOAP? = current
-                var thePlan: [Action] = []
-                repeat {
-                    if let action = current?.action {
-                        thePlan.append(action)
-                    }
-
-                    var previousNode: NodeGOAP? = openAStar.first { $0.id == current?.parentId }
-                    if previousNode == nil {
-                        previousNode = closedAStar.first { $0.id == current?.parentId }
-                    }
-
-                    current = previousNode
-                
-                } while (current?.parentId != 0)
-
-                return thePlan
+            if current.state.meets(goalState: goal) {
+                return retracePath(from: current)
             }
 
             for potentialAction in actions {
                 if !potentialAction.isOperable(onWorldState: current.state) {
                     continue;
                 }
+
                 let outcomeState = potentialAction.act(onWorldState: current.state)
 
                 if isClosed(state: outcomeState) {
                     continue
                 }
 
-                if var outComeNode = isOpen(state: outcomeState),  
+                if var outComeNode = find(state: outcomeState, in: openAStar),  
                     current.cost + potentialAction.cost < outComeNode.cost {
-                    
+                     
                     outComeNode.parentId = current.id
                     outComeNode.cost = current.cost + potentialAction.cost
-                    outComeNode.costToGoal = calculateHeuristic(current: outcomeState, goal: goal)
+                    outComeNode.costToGoal = calculateHeuristic(withCurrent: outcomeState, andGoal: goal)
                     outComeNode.action = potentialAction
 
                     openAStar.sort(by: { $0 < $1 } )
+                    
                 } else {
                     let foundNode = NodeGOAP(
                         state: outcomeState, 
                         parentId: current.id, 
                         cost: current.cost + potentialAction.cost,
-                        costToGoal: calculateHeuristic(current: outcomeState, goal: goal), 
+                        costToGoal: calculateHeuristic(withCurrent: outcomeState, andGoal: goal), 
                         action: potentialAction
                     )
 
-                    addToOpen(node: foundNode)
+                    add(toOpenList: foundNode)
                 }
                 
             }
         }
-
-        print("No plan found for this start and goal")
-
+        
         return []
     }
 
+    private func retracePath(from node: NodeGOAP) -> [Action] {
+        var current: NodeGOAP? = node
+        var thePlan: [Action] = []
+        repeat {
+            if let action = current?.action {
+                thePlan.append(action)
+            }
+
+            var previousNode: NodeGOAP? = openAStar.first { $0.id == current?.parentId }
+            if previousNode == nil {
+                previousNode = closedAStar.first { $0.id == current?.parentId }
+            }
+
+            current = previousNode
+        
+        } while (current?.parentId != 0)
+
+        return thePlan
+    }
+
     private func isClosed(state: WorldState) -> Bool {
-        return closedAStar.contains(where: { $0.state == state })
+        return find(state: state, in: closedAStar) != nil
     }
 
-    private func isOpen(state: WorldState) -> NodeGOAP? {
-        return openAStar.first(where: { $0.state == state })
+    private func find(state: WorldState, in list: [NodeGOAP]) -> NodeGOAP? {
+        return list.first(where: { $0.state == state })
     }
 
-    internal func popAndAddToClose() -> NodeGOAP? {
+    private func extractNextNode() -> NodeGOAP? {
         let node = openAStar.removeFirst()
         closedAStar.append(node)
         
         return node
     }
 
-    private func addToOpen(node: NodeGOAP) {
+    private func add(toOpenList node: NodeGOAP) {
         openAStar.insertInOrder(of: node) { $0 < $1 }
     }
 
-    private func calculateHeuristic(current: WorldState, goal: WorldState) -> Int {
+    private func calculateHeuristic(withCurrent current: WorldState,  andGoal goal: WorldState) -> Int {
         return current.distance(to: goal)
     }
 
