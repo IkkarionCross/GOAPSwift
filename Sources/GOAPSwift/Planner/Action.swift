@@ -34,6 +34,9 @@ public struct Action {
     }
 
     internal func act(onWorldState worldState: WorldState) -> WorldState {
+        guard isOperable(onWorldState: worldState) else {
+            return worldState
+        }
         var newWorldState = WorldState.newWorldState(basedOn: worldState)
         for effect in effects {
             newWorldState[effect.key] = effect.value
