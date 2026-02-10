@@ -60,7 +60,7 @@ public class Planner {
                     continue
                 }
 
-                if var outComeNode = find(state: outcomeState, in: openAStar),  
+                if let outComeNode = find(state: outcomeState, in: openAStar),  
                     current.cost + potentialAction.cost < outComeNode.cost {
                      
                     outComeNode.parentId = current.id
