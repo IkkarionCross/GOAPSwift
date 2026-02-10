@@ -10,23 +10,14 @@ public class Planner {
         self.closedAStar = []
     }
 
-    public func printOpenList() {
-        for node in openAStar {
-            node.printDescription()
-        }
-    }
-
-    public func printClosedList() {
-        for node in closedAStar {
-            node.printDescription()
-        }
-    }
-
     public func plan(fromState startState: WorldState, toGoalState goal: WorldState, actions: [Action]) -> [Action] {
+        
         guard !startState.meets(goalState: goal) else {
+            GOAPLogger.logger.notice("Start state already meets the goal")
             return []
         }
-
+    
+        GOAPLogger.logger.notice("Cleaning up previous states")
         openAStar.removeAll()
         closedAStar.removeAll()
 
@@ -39,24 +30,31 @@ public class Planner {
         )
 
         openAStar.append(startingNode)
-
+        GOAPLogger.logger.notice("Planner started")
         while openAStar.count > 0 {
+            
             guard let current = extractNextNode() else {
+                GOAPLogger.logger.critical("Planner failed to extract next node")
                 return []
             }
 
+            GOAPLogger.logger.debug("Processing node with state: \(current.state.printedDescription)")
+
             if current.state.meets(goalState: goal) {
+                GOAPLogger.logger.debug("Found goal state retracing path")
                 return retracePath(from: current)
             }
 
             for potentialAction in actions {
                 if !potentialAction.isOperable(onWorldState: current.state) {
+                    GOAPLogger.logger.debug("Action not operable: \(potentialAction.name) in: \(current.state.printedDescription)")
                     continue;
                 }
 
                 let outcomeState = potentialAction.act(onWorldState: current.state)
 
                 if isClosed(state: outcomeState) {
+                    GOAPLogger.logger.debug("Outcome state already closed: \(outcomeState.printedDescription)")
                     continue
                 }
 
@@ -68,6 +66,7 @@ public class Planner {
                     outComeNode.costToGoal = calculateHeuristic(withCurrent: outcomeState, andGoal: goal)
                     outComeNode.action = potentialAction
 
+                    GOAPLogger.logger.debug("Sorting open list after updating node with state: \(outcomeState.printedDescription)")
                     openAStar.sort(by: { $0 < $1 } )
                     
                 } else {
@@ -78,6 +77,8 @@ public class Planner {
                         costToGoal: calculateHeuristic(withCurrent: outcomeState, andGoal: goal), 
                         action: potentialAction
                     )
+
+                    GOAPLogger.logger.debug("Adding new node to open list with action: \(potentialAction.name)")
 
                     add(toOpenList: foundNode)
                 }
@@ -92,7 +93,9 @@ public class Planner {
         var current: NodeGOAP? = node
         var thePlan: [Action] = []
         repeat {
+            
             if let action = current?.action {
+                GOAPLogger.logger.debug("adding action to path: \(action.name)")
                 thePlan.append(action)
             }
 
@@ -104,7 +107,8 @@ public class Planner {
             current = previousNode
         
         } while (current?.parentId != 0)
-
+        
+        GOAPLogger.logger.debug("Returning plan with \(thePlan.count) actions")
         return thePlan
     }
 
@@ -131,5 +135,16 @@ public class Planner {
         return current.distance(to: goal)
     }
 
+    private func printOpenList() {
+        for node in openAStar {
+            node.printDescription()
+        }
+    }
+
+    private func printClosedList() {
+        for node in closedAStar {
+            node.printDescription()
+        }
+    }
 
 }
