@@ -39,7 +39,7 @@ public struct WorldState {
     public var printedDescription: String {
         var result = "WorldState { "
         for item in vars {
-            result.append("key: \(item.key) value: \(item.value) \n")
+            result.append("id: \(item.key.id) key: \(item.key.name) value: \(item.value) \n")
         }
         result.append(" }")
         return result
