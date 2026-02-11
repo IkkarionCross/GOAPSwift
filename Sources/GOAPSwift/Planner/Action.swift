@@ -5,9 +5,8 @@ public struct Action {
     public let name: String
     public let cost: Int
 
-    private var preconditions: [Int: Bool]
-
-    private var effects: [Int: Bool]
+    private var preconditions: [WorldPropertyKey: Bool] // change to array
+    private var effects: [WorldPropertyKey: Bool] // change to array
 
     public init(name: String, cost: Int) {
         self.name = name
@@ -16,12 +15,12 @@ public struct Action {
         self.effects = [:]
     }
 
-    public mutating func add(precondition: (id: Int, value: Bool)) {
-        self.preconditions[precondition.id] = precondition.value
+    public mutating func add(precondition: (id: WorldPropertyProtocol, value: Bool)) {
+        self.preconditions[WorldPropertyKey(key: precondition.id)] = precondition.value
     }
 
-    public mutating func add(effect: (id: Int, value: Bool)) {
-        self.effects[effect.id] = effect.value
+    public mutating func add(effect: (id: WorldPropertyProtocol, value: Bool)) {
+        self.effects[WorldPropertyKey(key: effect.id)] = effect.value
     }
 
     internal func isOperable(onWorldState worldState: WorldState) -> Bool {

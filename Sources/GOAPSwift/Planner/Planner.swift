@@ -9,7 +9,8 @@ public class Planner {
         self.openAStar = []
         self.closedAStar = []
     }
-
+    
+    // TODO: Generic action
     public func plan(fromState startState: WorldState, toGoalState goal: WorldState, actions: [Action]) -> [Action] {
         
         guard !startState.meets(goalState: goal) else {

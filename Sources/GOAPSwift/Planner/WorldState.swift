@@ -1,5 +1,36 @@
 import Foundation
 
+public protocol WorldPropertyProtocol {
+    var id: Int { get }
+    var name: String { get }
+}
+
+internal struct WorldPropertyKey: Hashable, Equatable, WorldPropertyProtocol {
+
+    var id: Int {
+        return key.id
+    }
+
+    var name: String {
+        return key.name
+    }
+
+    private let key: WorldPropertyProtocol
+
+    internal init(key: WorldPropertyProtocol) {
+        self.key = key
+    }
+
+    internal func hash(into hasher: inout Hasher) {
+        hasher.combine(key.id)
+        hasher.combine(key.name)
+    }
+
+    internal static func ==(lhs: WorldPropertyKey, _ rhs: WorldPropertyKey) -> Bool {
+        return lhs.key.id == rhs.key.id && lhs.key.name == rhs.key.name
+    }
+}
+
 public struct WorldState {
 
     public let priority: Float
@@ -14,7 +45,7 @@ public struct WorldState {
         return result
     }
 
-    private var vars: [Int: Bool]
+    private var vars: [WorldPropertyKey: Bool]
 
     public init(name: String, priority: Float) {
         self.name = name
@@ -56,12 +87,12 @@ public struct WorldState {
         return lhs.vars == rhs.vars
     }
 
-    public subscript(key: Int) -> Bool? {
+    public subscript(key: WorldPropertyProtocol) -> Bool? {
         get {
-            return vars[key]
+            return vars[WorldPropertyKey(key: key)]
         }
         set {
-            vars[key] = newValue
+            vars[WorldPropertyKey(key: key)] = newValue
         }
     }
 
