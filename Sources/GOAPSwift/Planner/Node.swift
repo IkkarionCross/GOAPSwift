@@ -32,8 +32,8 @@ public class NodeGOAP {
         return cost + costToGoal
     }
 
-    public func printDescription() {
-        print("Node { \(id) parent: \(parentId) F: \(f()) G: \(cost) H: \(costToGoal) \(state.printedDescription) } ")
+    public func printDescription() -> String {
+        "Node { \(id) parent: \(parentId) F: \(f()) G: \(cost) H: \(costToGoal) \(state.printedDescription) } "
     }
 
     public static func <(lhs: NodeGOAP, rhs: NodeGOAP) -> Bool {

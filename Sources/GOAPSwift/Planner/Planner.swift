@@ -18,8 +18,12 @@ public class Planner {
         }
     
         GOAPLogger.logger.notice("Cleaning up previous states")
+        
         openAStar.removeAll()
         closedAStar.removeAll()
+
+        GOAPLogger.logger.debug("Open list state: \(self.openAStar.isEmpty ? "Empty" : self.printOpenList())")
+        GOAPLogger.logger.debug("Closed list state: \(self.closedAStar.isEmpty ? "Empty" : self.printClosedList())")
 
         let startingNode = NodeGOAP(
             state: startState, 
@@ -60,6 +64,8 @@ public class Planner {
 
                 if let outComeNode = find(state: outcomeState, in: openAStar),  
                     current.cost + potentialAction.cost < outComeNode.cost {
+                        
+                    GOAPLogger.logger.debug("Found better path to node with state: \(outcomeState.printedDescription) updating path with \(potentialAction.name)")
                      
                     outComeNode.parentId = current.id
                     outComeNode.cost = current.cost + potentialAction.cost
@@ -82,6 +88,9 @@ public class Planner {
 
                     add(toOpenList: foundNode)
                 }
+
+                GOAPLogger.logger.debug("Open list state: \(self.printOpenList())")
+                GOAPLogger.logger.debug("Closed list state: \(self.printClosedList())")
                 
             }
         }
@@ -135,16 +144,20 @@ public class Planner {
         return current.distance(to: goal)
     }
 
-    private func printOpenList() {
-        for node in openAStar {
-            node.printDescription()
+    private func printOpenList() -> String {
+        var output = ""
+         for node in openAStar {
+            output += node.printDescription() + "\n"
         }
+        return output
     }
 
-    private func printClosedList() {
+    private func printClosedList() -> String {
+        var output = ""
         for node in closedAStar {
-            node.printDescription()
+            output += node.printDescription() + "\n"
         }
+        return output
     }
 
 }
