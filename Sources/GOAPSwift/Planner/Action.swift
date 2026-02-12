@@ -1,16 +1,25 @@
 import Foundation
 
+
+public protocol Executable {
+    var name: String { get }
+    var cost: Int { get }
+}
+
 public struct Action {
 
     public let name: String
     public let cost: Int
 
+    public let executable: Executable
+
     private var preconditions: [WorldPropertyKey: Bool] // change to array
     private var effects: [WorldPropertyKey: Bool] // change to array
 
-    public init(name: String, cost: Int) {
-        self.name = name
-        self.cost = cost
+    public init(executable: Executable) {
+        self.name = executable.name
+        self.cost = executable.cost
+        self.executable = executable
         self.preconditions = [:]
         self.effects = [:]
     }

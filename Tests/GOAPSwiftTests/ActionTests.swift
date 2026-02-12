@@ -11,10 +11,15 @@ internal struct ActionTests {
         var id: Int
 
     }
+
+    struct ActionMock: Executable {
+        var name: String = "testAction"
+        var cost: Int = 1
+    }
     
     @Test
     func testOperableAction() {
-        var action = Action(name: "testAction", cost: 1)
+        var action = Action(executable: ActionMock(name: "testAction", cost: 1))
         action.add(precondition: (id: WorldStateMock(name: String(), id: 0), value: true))
         action.add(effect: (id: WorldStateMock(name: String(), id: 1), value: true))
 
@@ -30,7 +35,7 @@ internal struct ActionTests {
 
     @Test
     func testNotOperableAction() {
-        var action = Action(name: "testAction", cost: 1)
+        var action = Action(executable: ActionMock(name: "testAction", cost: 1))
         action.add(precondition: (id: WorldStateMock(name: String(), id: 0), value: true))
         action.add(precondition: (id: WorldStateMock(name: String(), id: 1), value: true))
         action.add(effect: (id: WorldStateMock(name: String(), id: 1), value: true))

@@ -7,17 +7,14 @@ public protocol WorldPropertyProtocol {
 
 internal struct WorldPropertyKey: Hashable, Equatable, WorldPropertyProtocol {
 
-    var id: Int {
-        return key.id
-    }
-
-    var name: String {
-        return key.name
-    }
+    internal let id: Int
+    internal let name: String
 
     private let key: WorldPropertyProtocol
 
     internal init(key: WorldPropertyProtocol) {
+        self.id = key.id
+        self.name = key.name
         self.key = key
     }
 

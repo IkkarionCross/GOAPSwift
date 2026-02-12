@@ -41,37 +41,78 @@ final class PlannerBearFighterTests: PlannerTestable {
         }
     }
 
+    enum BearFighterAction: String, Executable {
+        case patrolling
+        case bearFollowEnemy
+        case bearFollowEnemyToAvgRange
+        case bearFollowEnemyToCloseRange
+        case deathRayAttack
+        case AOEAttack
+        case clawAttack
+        case counterClawAttack
+        case counterDeathRayAttack
+        case counterAOEAttack
+        case beserkMode
+        case getCloseTwoClawAttack
+        case deathRay3Attack
+        case dead
+
+        var name: String {
+            self.rawValue
+        }
+
+        var cost: Int {
+            switch self {
+            case .patrolling: return 250
+            case .bearFollowEnemy: return 70
+            case .bearFollowEnemyToAvgRange: return 70
+            case .bearFollowEnemyToCloseRange: return 70
+            case .deathRayAttack: return 5
+            case .AOEAttack: return 50
+            case .clawAttack: return 5
+            case .counterClawAttack: return 10
+            case .counterDeathRayAttack: return 10
+            case .counterAOEAttack: return 10
+            case .beserkMode: return 50
+            case .getCloseTwoClawAttack: return 30
+            case .deathRay3Attack: return 30
+            case .dead: return 30
+            }
+        }
+
+    }
+
 
     func createActions() {
 
-        var patrolling = Action(name: "patrolling", cost: 250) // Patroll
+        var patrolling = Action(executable: BearFighterAction.patrolling) // Patroll
         patrolling.add(precondition: (id: WorldProperty.enemy_sighted, value: false))
         
         patrolling.add(effect: (id: WorldProperty.enemy_sighted, value: true))
         actions.append(patrolling)
 
-        var bearFollowEnemy = Action(name: "bearFollowEnemy", cost: 70)
+        var bearFollowEnemy = Action(executable: BearFighterAction.bearFollowEnemy)
         bearFollowEnemy.add(precondition: (id: WorldProperty.enemy_sighted, value: true))
         bearFollowEnemy.add(precondition: (id: WorldProperty.enemy_in_range, value: false))
         
         bearFollowEnemy.add(effect: (id: WorldProperty.enemy_in_range, value: true))
         actions.append(bearFollowEnemy)
 
-        var bearFollowEnemyToAvgRange = Action(name: "bearFollowEnemyToAvgRange", cost: 70)
+        var bearFollowEnemyToAvgRange = Action(executable: BearFighterAction.bearFollowEnemyToAvgRange)
         bearFollowEnemyToAvgRange.add(precondition: (id: WorldProperty.enemy_sighted, value: true))
         bearFollowEnemyToAvgRange.add(precondition: (id: WorldProperty.enemy_in_avg_range, value: false))
         
         bearFollowEnemyToAvgRange.add(effect: (id: WorldProperty.enemy_in_avg_range, value: true))
         actions.append(bearFollowEnemyToAvgRange)
 
-        var bearFollowEnemyToCloseRange = Action(name: "bearFollowEnemyToCloseRange", cost: 70)
+        var bearFollowEnemyToCloseRange = Action(executable: BearFighterAction.bearFollowEnemyToCloseRange)
         bearFollowEnemyToCloseRange.add(precondition: (id: WorldProperty.enemy_sighted, value: true))
         bearFollowEnemyToCloseRange.add(precondition: (id: WorldProperty.enemy_in_close_range, value: false))
         
         bearFollowEnemyToCloseRange.add(effect: (id: WorldProperty.enemy_in_close_range, value: true))
         actions.append(bearFollowEnemyToCloseRange)
 
-        var deathRayAttack = Action(name: "deathRayAttack", cost: 5)
+        var deathRayAttack = Action(executable: BearFighterAction.deathRayAttack)
         deathRayAttack.add(precondition: (id: WorldProperty.enemy_in_range, value: true))
         deathRayAttack.add(precondition: (id: WorldProperty.enemy_sighted, value: true))
         deathRayAttack.add(precondition: (id: WorldProperty.enemy_dead, value: false))
@@ -79,7 +120,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         deathRayAttack.add(effect: (id: WorldProperty.enemy_dead, value: true))
         actions.append(deathRayAttack)
 
-        var AOEAttack = Action(name: "AOEAttack", cost: 50)
+        var AOEAttack = Action(executable: BearFighterAction.AOEAttack)
         AOEAttack.add(precondition: (id: WorldProperty.enemy_in_avg_range, value: true))
         AOEAttack.add(precondition: (id: WorldProperty.enemy_dead, value: false))
         AOEAttack.add(precondition: (id: WorldProperty.enemy_sighted, value: true))
@@ -87,7 +128,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         AOEAttack.add(effect: (id: WorldProperty.enemy_dead, value: true))
         actions.append(AOEAttack)
 
-        var clawAttack = Action(name: "clawAttack", cost: 5)
+        var clawAttack = Action(executable: BearFighterAction.clawAttack)
         clawAttack.add(precondition: (id: WorldProperty.enemy_sighted, value: true))
         clawAttack.add(precondition: (id: WorldProperty.enemy_dead, value: false))
         clawAttack.add(precondition: (id: WorldProperty.enemy_in_close_range, value: true))
@@ -96,7 +137,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         clawAttack.add(effect: (id: WorldProperty.enemy_dead, value: true))
         actions.append(clawAttack)
 
-        var counterClawAttack = Action(name: "counterClawAttack", cost: 10)
+        var counterClawAttack = Action(executable: BearFighterAction.counterClawAttack)
         counterClawAttack.add(precondition: (id: WorldProperty.enemy_sighted, value: true))
         counterClawAttack.add(precondition: (id: WorldProperty.enemy_dead, value: false))
         counterClawAttack.add(precondition: (id: WorldProperty.enemy_in_close_range, value: true))
@@ -105,7 +146,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         counterClawAttack.add(effect: (id: WorldProperty.enemy_dead, value: true))
         actions.append(counterClawAttack)
 
-        var counterDeathRayAttack = Action(name: "counterDeathRayAttack", cost: 10)
+        var counterDeathRayAttack = Action(executable: BearFighterAction.counterDeathRayAttack)
         counterDeathRayAttack.add(precondition: (id: WorldProperty.enemy_sighted, value: true))
         counterDeathRayAttack.add(precondition: (id: WorldProperty.enemy_dead, value: false))
         counterDeathRayAttack.add(precondition: (id: WorldProperty.enemy_in_range, value: true))
@@ -114,7 +155,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         counterDeathRayAttack.add(effect: (id: WorldProperty.enemy_dead, value: true))
         actions.append(counterDeathRayAttack)
 
-        var counterAOEAttack = Action(name: "counterAOEAttack", cost: 10)
+        var counterAOEAttack = Action(executable: BearFighterAction.counterAOEAttack)
         counterAOEAttack.add(precondition: (id: WorldProperty.enemy_sighted, value: true))
         counterAOEAttack.add(precondition: (id: WorldProperty.enemy_dead, value: false))
         counterAOEAttack.add(precondition: (id: WorldProperty.enemy_in_avg_range, value: true))
@@ -123,7 +164,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         counterAOEAttack.add(effect: (id: WorldProperty.enemy_dead, value: true))
         actions.append(counterAOEAttack)
 
-        var beserkMode = Action(name: "beserkMode", cost: 50)
+        var beserkMode = Action(executable: BearFighterAction.beserkMode)
         beserkMode.add(precondition: (id: WorldProperty.enemy_sighted, value: true))
         beserkMode.add(precondition: (id: WorldProperty.enemy_dead, value: false))
         beserkMode.add(precondition: (id: WorldProperty.life_less_than_50_percent, value: true))
@@ -131,7 +172,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         beserkMode.add(effect: (id: WorldProperty.enemy_dead, value: true))
         actions.append(beserkMode)
 
-        var getCloseTwoClawAttack = Action(name: "getCloseTwoClawAttack", cost: 30)
+        var getCloseTwoClawAttack = Action(executable: BearFighterAction.getCloseTwoClawAttack)
         getCloseTwoClawAttack.add(precondition: (id: WorldProperty.enemy_sighted, value: true))
         getCloseTwoClawAttack.add(precondition: (id: WorldProperty.enemy_dead, value: false))
         getCloseTwoClawAttack.add(precondition: (id: WorldProperty.enemy_in_close_range, value: true))
@@ -140,7 +181,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         getCloseTwoClawAttack.add(effect: (id: WorldProperty.enemy_dead, value: true))
         actions.append(getCloseTwoClawAttack)
 
-        var deathRay3Attack = Action(name: "deathRay3Attack", cost: 30)
+        var deathRay3Attack = Action(executable: BearFighterAction.deathRay3Attack)
         deathRay3Attack.add(precondition: (id: WorldProperty.enemy_sighted, value: true))
         deathRay3Attack.add(precondition: (id: WorldProperty.enemy_dead, value: false))
         deathRay3Attack.add(precondition: (id: WorldProperty.enemy_in_avg_range, value: true))
@@ -151,7 +192,7 @@ final class PlannerBearFighterTests: PlannerTestable {
         deathRay3Attack.add(effect: (id: WorldProperty.enemy_dead, value: true))
         actions.append(deathRay3Attack)
 
-        var dead = Action(name: "dead", cost: 30)
+        var dead = Action(executable: BearFighterAction.dead)
         dead.add(precondition: (id: WorldProperty.me_dead, value: true))
 
         dead.add(effect: (id: WorldProperty.me_dead, value: true))
