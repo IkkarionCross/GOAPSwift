@@ -542,6 +542,33 @@ final class PlannerBearFighterTests: PlannerTestable {
     }
 
     @Test
+    func shouldReturnPlanInExecutionOrder() async throws {
+
+        // Scenario from the debug report: the bear has low life and has NOT
+        // yet spotted the enemy. The cheapest chain to `enemy_dead` is:
+        //   patrolling (enemy_sighted -> true)  then  beserkMode (enemy_dead -> true)
+        // So the FIRST action to execute (plan[0]) must be "patrolling".
+        createActions()
+
+        var initialState = createInitialState()
+        initialState[WorldProperty.life_less_than_50_percent] = true
+        // enemy_sighted stays false -> bear must patrol before it can fight.
+
+        var goalState = WorldState(name: "State", priority: 100)
+        goalState[WorldProperty.enemy_dead] = true
+
+        let planner = Planner()
+
+        let nextActions = planner.plan(fromState: initialState, toGoalState: goalState, actions: actions)
+
+        let planOrder = nextActions.map { $0.name }
+
+        // plan[0] is the first action to execute; it must be operable on the
+        // real initial world state (enemy_sighted == false), i.e. "patrolling".
+        #expect(planOrder == ["patrolling", "beserkMode"], "Plan out of execution order: \(planOrder)")
+    }
+
+    @Test
     func shouldAttackGettingWayEnemyClose() async throws {
 
         let expectedActionsNames: [String] = [

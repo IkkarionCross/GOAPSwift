@@ -118,7 +118,10 @@ public class Planner {
         } while (current?.parentId != 0)
         
         GOAPLogger.logger.debug("Returning plan with \(thePlan.count) actions")
-        return thePlan
+        // retracePath walks backward from the goal node to the start node, so
+        // `thePlan` is built in reverse (last action first). Reverse it so that
+        // plan[0] is the first action to execute.
+        return Array(thePlan.reversed())
     }
 
     private func isClosed(state: WorldState) -> Bool {
