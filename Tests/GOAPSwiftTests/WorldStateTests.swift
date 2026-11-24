@@ -126,4 +126,44 @@ final class WorldStateTests {
         #expect(goalState == worldState)
     }
 
+    @Test
+    func testShouldStoreBooleanAndIntegerValues() {
+        let sighted = WorldStateMock(name: "foe_sighted", id: 0)
+        let energy = WorldStateMock(name: "energy", id: 1)
+        var state = WorldState(name: "mixed", priority: 0)
+
+        state[sighted] = true
+        state[integer: energy] = 75
+
+        #expect(state[sighted] == true)
+        #expect(state[integer: energy] == 75)
+    }
+
+    @Test
+    func testShouldCopyAndCompareMixedWorldState() {
+        let sighted = WorldStateMock(name: "foe_sighted", id: 0)
+        let energy = WorldStateMock(name: "energy", id: 1)
+        var state = WorldState(name: "mixed", priority: 0)
+        state[sighted] = true
+        state[integer: energy] = 40
+
+        let copy = WorldState.newWorldState(basedOn: state)
+
+        #expect(copy == state)
+        #expect(copy[sighted] == true)
+        #expect(copy[integer: energy] == 40)
+    }
+
+    @Test
+    func testIntegerDifferenceCountsAsOneHeuristicDifference() {
+        let energy = WorldStateMock(name: "energy", id: 0)
+        var current = WorldState(name: "current", priority: 0)
+        var goal = WorldState(name: "goal", priority: 0)
+        current[integer: energy] = 5
+        goal[integer: energy] = 100
+
+        #expect(current.distance(to: goal) == 1)
+        #expect(!current.meets(goalState: goal))
+    }
+
 }

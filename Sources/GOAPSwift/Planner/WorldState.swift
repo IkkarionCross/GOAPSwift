@@ -6,10 +6,8 @@ public protocol WorldPropertyProtocol {
 }
 
 internal struct WorldPropertyKey: Hashable, Equatable, WorldPropertyProtocol {
-
     internal let id: Int
     internal let name: String
-
     private let key: WorldPropertyProtocol
 
     internal init(key: WorldPropertyProtocol) {
@@ -24,12 +22,23 @@ internal struct WorldPropertyKey: Hashable, Equatable, WorldPropertyProtocol {
     }
 
     internal static func ==(lhs: WorldPropertyKey, _ rhs: WorldPropertyKey) -> Bool {
-        return lhs.key.id == rhs.key.id && lhs.key.name == rhs.key.name
+        lhs.key.id == rhs.key.id && lhs.key.name == rhs.key.name
     }
 }
 
-public struct WorldState {
+public enum WorldValue: Equatable, Hashable, Sendable, CustomStringConvertible {
+    case boolean(Bool)
+    case integer(Int)
 
+    public var description: String {
+        switch self {
+        case .boolean(let value): return String(value)
+        case .integer(let value): return String(value)
+        }
+    }
+}
+
+public struct WorldState: Equatable {
     public let priority: Float
     public let name: String
 
@@ -42,7 +51,7 @@ public struct WorldState {
         return result
     }
 
-    private var vars: [WorldPropertyKey: Bool]
+    private var vars: [WorldPropertyKey: WorldValue]
 
     public init(name: String, priority: Float) {
         self.name = name
@@ -52,16 +61,13 @@ public struct WorldState {
 
     public func meets(goalState state: WorldState) -> Bool {
         for item in state.vars {
-            if self.vars[item.key] != item.value {
+            if vars[item.key] != item.value {
                 return false
             }
         }
         return true
     }
 
-    /*
-        How many variables of this state differs from the other state?
-    */
     public func distance(to state: WorldState) -> Int {
         var result = 0
         for item in state.vars {
@@ -74,23 +80,54 @@ public struct WorldState {
 
     public static func newWorldState(basedOn state: WorldState) -> WorldState {
         var newState = WorldState(name: state.name, priority: state.priority)
-        for item in state.vars {
-            newState.vars[item.key] = item.value
-        }
+        newState.vars = state.vars
         return newState
     }
 
-    public static func ==(lhs: WorldState, _ rhs: WorldState) -> Bool {
-        return lhs.vars == rhs.vars
+    public static func ==(lhs: WorldState, rhs: WorldState) -> Bool {
+        lhs.vars == rhs.vars
     }
 
     public subscript(key: WorldPropertyProtocol) -> Bool? {
         get {
-            return vars[WorldPropertyKey(key: key)]
+            guard case .boolean(let value) = vars[WorldPropertyKey(key: key)] else {
+                return nil
+            }
+            return value
+        }
+        set {
+            let property = WorldPropertyKey(key: key)
+            if let newValue {
+                vars[property] = .boolean(newValue)
+            } else {
+                vars[property] = nil
+            }
+        }
+    }
+
+    public subscript(integer key: WorldPropertyProtocol) -> Int? {
+        get {
+            guard case .integer(let value) = vars[WorldPropertyKey(key: key)] else {
+                return nil
+            }
+            return value
+        }
+        set {
+            let property = WorldPropertyKey(key: key)
+            if let newValue {
+                vars[property] = .integer(newValue)
+            } else {
+                vars[property] = nil
+            }
+        }
+    }
+
+    public subscript(value key: WorldPropertyProtocol) -> WorldValue? {
+        get {
+            vars[WorldPropertyKey(key: key)]
         }
         set {
             vars[WorldPropertyKey(key: key)] = newValue
         }
     }
-
 }
